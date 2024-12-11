@@ -1,22 +1,15 @@
-import axios from "axios";
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-const GEMINI_API_BASE_URL = "https://api.gemini.com/v1";
-const API_KEY = process.env.GEMINI_API_KEY;
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-export const getGeminiData = async (
-  endpoint: string,
-  params: Record<string, any> = {}
-) => {
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+export const generateResult = async (prompt: string): Promise<string> => {
   try {
-    const response = await axios.get(`$(GEMINI_API_BASE_URL)/${endpoint}`, {
-      headers: {
-        Authorization: `Bearer ${API_KEY}`,
-      },
-      params,
-    });
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching data from Gemini");
-    throw new Error("Failing to fetch data from Gemini");
+    const result = await model.generateContent(prompt);
+    return result;
+  } catch (e) {
+    console.error("Error fetching data from Gemini", e);
+    throw new Error("Failed to fetch data from Gemini");
   }
 };

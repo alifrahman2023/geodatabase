@@ -1,15 +1,27 @@
 import puppeteer from "puppeteer";
 
-export const scrapedWebsite = async (url: string): Promise<string> => {
-  const browser = await puppeteer.launch({ headless: true });
-  const page = await browser.newPage();
-  await page.goto(url, { waitUntil: "networkidle2" });
+export const scrapeWebsite = async (url: string): Promise<string> => {
+  try {
+    const browser = await puppeteer.launch({
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      headless: false, // some rendering doesn't happen if this is set true (it's needed)
+      //slowMo: 50
+    });
+    const page = await browser.newPage();
 
-  const data: string = await page.evaluate(() => {
-    const rawText = document.body.innerText;
-    return rawText;
-  });
+    // once you're at the url, wait until it's loaded then proceed
+    await page.goto(url, { waitUntil: "networkidle2" });
 
-  await browser.close();
-  return data;
+    const data: string = await page.evaluate(() => {
+      const rawText = document.body.innerText;
+      console.log(rawText);
+      return rawText;
+    });
+
+    await browser.close();
+    return data;
+  } catch (e) {
+    console.error("Error parsing the website", e);
+    throw new Error("Failed to parse the website");
+  }
 };
