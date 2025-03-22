@@ -1,6 +1,15 @@
-# dependencies
-/node_modules
+# Ignore environment variable files
+*.env
+.env.*
 
-# secrets
-.env
-serviceAccountKey.json
+# Ignore Python cache directories and bytecode files
+**/__pycache__/
+*.py[cod]
+*$py.class
+
+# Ignore Node.js modules directories anywhere in the project
+**/node_modules/
+
+# Optionally ignore OS-specific files
+.DS_Store
+Thumbs.db
