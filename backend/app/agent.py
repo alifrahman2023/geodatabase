@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 import datetime
 from dotenv import load_dotenv
 import asyncio
-
+from typing import List
 load_dotenv()  # loads Gemini Key from env file 
 
 @dataclass
@@ -31,10 +31,17 @@ class ResearchResult(BaseModel):
         ..., 
         description="This is a set of bulletpoints that summarize the answers for the query"
     )
-
+    research_links: str = Field(
+        ...,
+        description=(
+            "This is a list of links used for researching. For any links obtained via the search_wikipedia tool, "
+            "use the standard format: 'https://en.wikipedia.org/wiki/{title_with_underscores_instead_of_spaces}'. "
+            "Please seperate there links using new lines so I can correctly further process them."
+        )
+    )
 # Create the agent with improved instructions in the system prompt.
 search_agent = Agent(
-    'google-gla:gemini-2.0-flash',
+    'google-gla:gemini-2.0-flash-lite',
     deps_type=ResearchDependencies,
     result_type=ResearchResult,
     system_prompt=(
@@ -109,19 +116,20 @@ async def research_bot(query):
     date_string = current_date.strftime("%Y-%m-%d")
     # Use the same dependency type as defined in the agent.
     deps = SearchDataclass(max_results=5, todays_date=date_string)
-    result =  await search_agent.run(query, deps=deps) 
-    
-    return f"{result.data.research_title} \n {result.data.research_main} \n {result.data.research_bullets}"
 
-async def streaming_research_bot(query):
-    current_date = datetime.date.today()    
-    date_string = current_date.strftime("%Y-%m-%d")
-    # Use the same dependency type as defined in the agent.
-    deps = SearchDataclass(max_results=5, todays_date=date_string)
-    async with search_agent.run_stream(query, deps=deps) as message:
-        print("STREAMING:   ", message)
-        yield message
-    return 
+    result =  await search_agent.run(query, deps=deps) 
+    print(result.data.research_links)
+    return f"{result.data.research_title} \n {result.data.research_main} \n {result.data.research_bullets}", result.data.research_links
+
+# async def streaming_research_bot(query):
+#     current_date = datetime.date.today()    
+#     date_string = current_date.strftime("%Y-%m-%d")
+#     # Use the same dependency type as defined in the agent.
+#     deps = SearchDataclass(max_results=5, todays_date=date_string)
+#     async with search_agent.run_stream(query, deps=deps) as message:
+#         print("STREAMING:   ", message)
+#         yield message
+#     return 
         
 # async def main():
 #     await ask_the_bot("How has the geography of the United States Planes affected agriculture.")

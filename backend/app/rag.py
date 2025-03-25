@@ -34,7 +34,7 @@ def prompt_maker(question: str, context: str = "", role: str = None):
 async def ask_gemini(prompt: dict, retries: int = 3, backoff_factor: int = 2):
     
     response = gemini_client.models.generate_content_stream(
-        model="gemini-2.0-flash",
+        model="gemini-2.0-flash-lite",
         config=types.GenerateContentConfig(
         system_instruction=prompt["system_instruction"]),
         contents=[prompt["content"]]
