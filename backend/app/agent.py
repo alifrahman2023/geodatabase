@@ -65,7 +65,7 @@ def rate_limit_request():
     while REQUEST_TIMESTAMPS and time.time() - REQUEST_TIMESTAMPS[0] > 1:
         REQUEST_TIMESTAMPS.popleft()
     # If we have 20 or more requests in the last second, wait.
-    if len(REQUEST_TIMESTAMPS) >= 20:
+    if len(REQUEST_TIMESTAMPS) >= 18:
         sleep_time = 1 - (time.time() - REQUEST_TIMESTAMPS[0])
         time.sleep(sleep_time)
     REQUEST_TIMESTAMPS.append(time.time())
