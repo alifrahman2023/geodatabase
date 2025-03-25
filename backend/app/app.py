@@ -2,7 +2,7 @@
 from .rag import prompt_maker, ask_gemini
 from fastapi import FastAPI, WebSocket
 import json
-
+from .agent import research_bot, streaming_research_bot
 app = FastAPI()
 
 @app.websocket("/ask")
@@ -10,24 +10,22 @@ async def ask( websocket: WebSocket):
     print("The endpoint was hit!!!")
     await websocket.accept()
     print("After accepting in normal ask")
-
+    
     try:
         while True:
-            # Receive data from the WebSocket
+          
             data = await websocket.receive_text()
             parsed_data = json.loads(data)
             query = parsed_data.get("query", "")
             role = parsed_data.get("role", "")
-
+            
+            research  = await research_bot(query)
+            
         
-            if role == "":
-                prompt = prompt_maker( question = query)
-
-            else:
-                prompt = prompt_maker(question = query, role = role)
+            prompt = prompt_maker(question = query, context = research, role = "Please provide a detailed response using all the research in the 'CONTEXT' section and try to add on any information you may know that is not outdated or relient on current events.")
 
          
-            # Call the `ask_llama` async generator and stream its output
+            print("THIS IS MY PROMPT:::     ", prompt)
             async for message in ask_gemini(prompt):
                 if not message["done"]:
                     print(message["response"])
